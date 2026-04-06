@@ -1,0 +1,70 @@
+<UserControl x:Class="CalismaTakip.Views.DailyTrackingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16" LastChildFill="True">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Günlük Takip"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <Button Content="Kaydet"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding SaveCommand}"
+                        Margin="16,0,0,0"
+                        MinWidth="100"
+                        Padding="16,10" />
+            </StackPanel>
+            <TextBlock Text="{Binding StatusMessage}"
+                       Margin="16,0,0,0"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource Brush.TextMuted}"
+                       TextTrimming="CharacterEllipsis" />
+        </DockPanel>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="Tarih"
+                       VerticalAlignment="Center"
+                       Margin="0,0,12,0"
+                       Foreground="{StaticResource Brush.TextMuted}" />
+            <DatePicker SelectedDate="{Binding SelectedDateUi, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Width="200" />
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Top"
+                   Text="Tamamlananlar"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,8" />
+
+        <ItemsControl DockPanel.Dock="Top"
+                      ItemsSource="{Binding CheckItems}"
+                      Margin="0,0,0,20">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="{StaticResource Brush.Border}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12,10"
+                            Margin="0,0,0,8"
+                            Background="#FAFBFC">
+                        <CheckBox Content="{Binding DisplayName}"
+                                  IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  FontSize="14" />
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock DockPanel.Dock="Top"
+                   Text="Not"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,8" />
+
+        <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 MinHeight="160"
+                 MaxLength="8000" />
+    </DockPanel>
+</UserControl>

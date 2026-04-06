@@ -1,0 +1,46 @@
+<UserControl x:Class="CalismaTakip.Views.WeekendPlanView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16" LastChildFill="True">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Hafta Sonu Plan"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <Button Content="Kaydet"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding SaveCommand}"
+                        Margin="16,0,0,0"
+                        MinWidth="100"
+                        Padding="16,10" />
+            </StackPanel>
+            <TextBlock Text="{Binding StatusMessage}"
+                       Margin="16,0,0,0"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource Brush.TextMuted}"
+                       TextTrimming="CharacterEllipsis" />
+        </DockPanel>
+
+        <TextBlock DockPanel.Dock="Top"
+                   Text="Cumartesi ve Pazar için plan; değişiklikleri Kaydet ile saklayın."
+                   Foreground="{StaticResource Brush.TextMuted}"
+                   Margin="0,0,0,12"
+                   TextWrapping="Wrap" />
+
+        <DataGrid ItemsSource="{Binding Rows}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Saat"
+                                    Binding="{Binding TimeRangeLabel}"
+                                    IsReadOnly="True"
+                                    Width="128" />
+                <DataGridTextColumn Header="Cumartesi"
+                                    Binding="{Binding SaturdayActivity, UpdateSourceTrigger=PropertyChanged}"
+                                    Width="*" />
+                <DataGridTextColumn Header="Pazar"
+                                    Binding="{Binding SundayActivity, UpdateSourceTrigger=PropertyChanged}"
+                                    Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

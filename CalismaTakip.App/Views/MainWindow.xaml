@@ -1,0 +1,72 @@
+<Window x:Class="CalismaTakip.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:CalismaTakip.ViewModels"
+        xmlns:views="clr-namespace:CalismaTakip.Views"
+        Title="Çalışma Takip"
+        Height="720"
+        Width="1180"
+        MinHeight="560"
+        MinWidth="1120"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:WeekdayPlanViewModel}">
+            <views:WeekdayPlanView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WeekendPlanViewModel}">
+            <views:WeekendPlanView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DailyTrackingViewModel}">
+            <views:DailyTrackingView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TakipGecmisiViewModel}">
+            <views:TakipGecmisiView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0"
+                Background="{StaticResource Brush.Surface}"
+                BorderBrush="{StaticResource Brush.Border}"
+                BorderThickness="0,0,1,0"
+                Padding="16,20">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Menü"
+                           FontSize="12"
+                           Foreground="{StaticResource Brush.TextMuted}"
+                           Margin="4,0,0,12" />
+                <StackPanel DockPanel.Dock="Top">
+                    <Button Content="Hafta İçi Plan"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding ShowWeekdayCommand}" />
+                    <Button Content="Hafta Sonu Plan"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding ShowWeekendCommand}" />
+                    <Button Content="Günlük Takip"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding ShowDailyCommand}" />
+                    <Button Content="Geçmiş / Takip"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding ShowHistoryCommand}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Column="1" Padding="20">
+            <Border Background="{StaticResource Brush.Surface}"
+                    BorderBrush="{StaticResource Brush.Border}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="20">
+                <ContentControl Content="{Binding CurrentPage}" />
+            </Border>
+        </Border>
+    </Grid>
+</Window>
