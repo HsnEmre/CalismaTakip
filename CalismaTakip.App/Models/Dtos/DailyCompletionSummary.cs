@@ -1,6 +1,9 @@
+using CalismaTakip.Helpers;
+using CalismaTakip.Models;
+
 namespace CalismaTakip.Models.Dtos;
 
-/// <summary>Bir günün dört hedefe göre özet tamamlanma bilgisi.</summary>
+/// <summary>Günlük plan satırlarına göre tamamlanma özeti (takvim / istatistik).</summary>
 public sealed class DailyCompletionSummary
 {
     public static DailyCompletionSummary Empty(DateOnly date) =>
@@ -8,31 +11,46 @@ public sealed class DailyCompletionSummary
         {
             Date = date,
             HasRecord = false,
-            TechnicalDone = false,
-            SpeakingDone = false,
-            GrammarDone = false,
-            SleepDone = false,
-            CompletedCount = 0,
+            CompletedTaskCount = 0,
+            TotalTaskCount = 0,
             CompletionPercent = 0,
-            Note = string.Empty
+            Note = string.Empty,
+            PlanTypeLabel = string.Empty
         };
 
     public required DateOnly Date { get; init; }
 
     public bool HasRecord { get; init; }
 
-    public bool TechnicalDone { get; init; }
+    public int CompletedTaskCount { get; init; }
 
-    public bool SpeakingDone { get; init; }
+    public int TotalTaskCount { get; init; }
 
-    public bool GrammarDone { get; init; }
-
-    public bool SleepDone { get; init; }
-
-    public int CompletedCount { get; init; }
-
-    /// <summary>0–100 arası; tamamlanan / 4 * 100.</summary>
+    /// <summary>0–100: tamamlanan / toplam satır * 100.</summary>
     public double CompletionPercent { get; init; }
 
     public string Note { get; init; } = string.Empty;
+
+    public string PlanTypeLabel { get; init; } = string.Empty;
+
+    public static DailyCompletionSummary FromHeader(DailyPlanTrackHeader header)
+    {
+        ArgumentNullException.ThrowIfNull(header);
+        var items = header.Items?.ToList() ?? new List<DailyPlanTrackItem>();
+        var total = items.Count;
+        var done = items.Count(i => i.IsCompleted);
+        var hasRecord = total > 0;
+        var pct = total == 0 ? 0 : Math.Round(done * 100.0 / total, 1);
+
+        return new DailyCompletionSummary
+        {
+            Date = header.TrackDate,
+            HasRecord = hasRecord,
+            CompletedTaskCount = done,
+            TotalTaskCount = total,
+            CompletionPercent = pct,
+            Note = header.Note ?? string.Empty,
+            PlanTypeLabel = PlanTemplateKindResolver.ToTurkishPlanLabel(header.TemplateKind)
+        };
+    }
 }

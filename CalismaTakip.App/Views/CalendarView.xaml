@@ -232,23 +232,14 @@
                                    Margin="0,0,0,12" />
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <TextBlock Text="Teknik çalışma: " FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding DetailTechnicalText}" TextWrapping="Wrap" />
+                            <TextBlock Text="Plan: " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailPlanTypeText}" TextWrapping="Wrap" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <TextBlock Text="Speaking: " FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding DetailSpeakingText}" TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <TextBlock Text="Grammar: " FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding DetailGrammarText}" TextWrapping="Wrap" />
+                            <TextBlock Text="Görevler: " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailTaskRatioText}" TextWrapping="Wrap" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <TextBlock Text="Uyku düzeni: " FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding DetailSleepText}" TextWrapping="Wrap" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                             <TextBlock Text="Tamamlanma: " FontWeight="SemiBold" />
                             <TextBlock Text="{Binding DetailPercentText}" TextWrapping="Wrap" />
                         </StackPanel>

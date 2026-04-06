@@ -1,4 +1,5 @@
 using CalismaTakip.Data;
+using CalismaTakip.Helpers;
 using CalismaTakip.Models;
 using CalismaTakip.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -19,35 +20,38 @@ public class DailyTrackingService : IDailyTrackingService
         ArgumentNullException.ThrowIfNull(viewModel);
 
         var date = viewModel.SelectedDate;
+        var kind = PlanTemplateKindResolver.ResolveForDate(date);
+
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
-        var definitions = await db.DailyCheckDefinitions
+        var header = await db.DailyPlanTrackHeaders
             .AsNoTracking()
-            .OrderBy(d => d.SortOrder)
-            .ToListAsync(cancellationToken);
+            .Include(h => h.Items)
+            .FirstOrDefaultAsync(h => h.TrackDate == date, cancellationToken);
 
-        viewModel.CheckItems.Clear();
+        viewModel.ApplyShellFromDate(kind);
+        viewModel.PlanRows.Clear();
 
-        foreach (var def in definitions)
+        if (header != null)
         {
-            viewModel.CheckItems.Add(new DailyCheckItemViewModel(def.Id, def.DisplayName));
+            viewModel.Note = header.Note ?? string.Empty;
+            foreach (var it in header.Items.OrderBy(i => i.SortOrder))
+                viewModel.PlanRows.Add(new DailyPlanTrackRowViewModel(it, viewModel.NotifyRowChanged));
+        }
+        else
+        {
+            viewModel.Note = string.Empty;
+            var templates = await db.PlanTemplateItems
+                .AsNoTracking()
+                .Where(t => t.TemplateKind == kind)
+                .OrderBy(t => t.SortOrder)
+                .ToListAsync(cancellationToken);
+
+            foreach (var t in templates)
+                viewModel.PlanRows.Add(new DailyPlanTrackRowViewModel(t, viewModel.NotifyRowChanged));
         }
 
-        var record = await db.DailyCheckRecords
-            .AsNoTracking()
-            .Include(r => r.Completions)
-            .FirstOrDefaultAsync(r => r.Date == date, cancellationToken);
-
-        viewModel.Note = record?.Note ?? string.Empty;
-
-        if (record == null)
-            return;
-
-        foreach (var item in viewModel.CheckItems)
-        {
-            var match = record.Completions.FirstOrDefault(c => c.DailyCheckDefinitionId == item.DefinitionId);
-            item.IsCompleted = match?.IsCompleted ?? false;
-        }
+        viewModel.RefreshSummary();
     }
 
     public async Task SaveAsync(DailyTrackingViewModel viewModel, CancellationToken cancellationToken = default)
@@ -55,51 +59,62 @@ public class DailyTrackingService : IDailyTrackingService
         ArgumentNullException.ThrowIfNull(viewModel);
 
         var date = viewModel.SelectedDate;
+        var kind = PlanTemplateKindResolver.ResolveForDate(date);
         var note = viewModel.Note ?? string.Empty;
 
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
-        var record = await db.DailyCheckRecords
-            .Include(r => r.Completions)
-            .FirstOrDefaultAsync(r => r.Date == date, cancellationToken);
+        var header = await db.DailyPlanTrackHeaders
+            .Include(h => h.Items)
+            .FirstOrDefaultAsync(h => h.TrackDate == date, cancellationToken);
 
-        if (record == null)
+        if (header == null)
         {
-            record = new DailyCheckRecord
+            header = new DailyPlanTrackHeader
             {
-                Date = date,
+                TrackDate = date,
+                TemplateKind = kind,
                 Note = note
             };
-            db.DailyCheckRecords.Add(record);
+            db.DailyPlanTrackHeaders.Add(header);
         }
         else
         {
-            record.Note = note;
+            header.Note = note;
+            header.TemplateKind = kind;
+            var existing = header.Items.ToList();
+            db.DailyPlanTrackItems.RemoveRange(existing);
         }
 
-        var definitionIds = viewModel.CheckItems.Select(i => i.DefinitionId).ToHashSet();
+        await db.SaveChangesAsync(cancellationToken);
 
-        foreach (var item in viewModel.CheckItems)
+        foreach (var row in viewModel.PlanRows.OrderBy(r => r.SortOrder))
         {
-            var existing = record.Completions.FirstOrDefault(c => c.DailyCheckDefinitionId == item.DefinitionId);
-            if (existing == null)
+            db.DailyPlanTrackItems.Add(new DailyPlanTrackItem
             {
-                record.Completions.Add(new DailyCheckCompletion
-                {
-                    DailyCheckDefinitionId = item.DefinitionId,
-                    IsCompleted = item.IsCompleted
-                });
-            }
-            else
-            {
-                existing.IsCompleted = item.IsCompleted;
-            }
+                HeaderId = header.Id,
+                StartTime = row.StartTime,
+                EndTime = row.EndTime,
+                Title = row.Title,
+                SortOrder = row.SortOrder,
+                IsCompleted = row.IsCompleted
+            });
         }
 
-        var stale = record.Completions.Where(c => !definitionIds.Contains(c.DailyCheckDefinitionId)).ToList();
-        foreach (var c in stale)
-            db.DailyCheckCompletions.Remove(c);
+        await db.SaveChangesAsync(cancellationToken);
+    }
 
+    public async Task DeleteTrackForDateAsync(DateOnly date, CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        var header = await db.DailyPlanTrackHeaders
+            .Include(h => h.Items)
+            .FirstOrDefaultAsync(h => h.TrackDate == date, cancellationToken);
+
+        if (header == null)
+            return;
+
+        db.DailyPlanTrackHeaders.Remove(header);
         await db.SaveChangesAsync(cancellationToken);
     }
 }

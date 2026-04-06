@@ -33,7 +33,6 @@ public partial class TakipGecmisiViewModel : ObservableObject
 
     public bool HasSelectedRow => SelectedRow is not null;
 
-    /// <summary>Kayıt varken henüz satır seçilmediyse ipucu gösterilir.</summary>
     public bool ShowSelectRowHint => !HasNoRecords && SelectedRow is null;
 
     partial void OnSelectedRowChanged(TakipGecmisiRowViewModel? value)
@@ -56,16 +55,16 @@ public partial class TakipGecmisiViewModel : ObservableObject
     private int _totalRecordDays;
 
     [ObservableProperty]
-    private int _technicalDoneDays;
+    private double _averageDailyCompletionPercent;
 
     [ObservableProperty]
-    private int _speakingDoneDays;
+    private int _fullyCompletedDays;
 
     [ObservableProperty]
-    private int _grammarDoneDays;
+    private int _totalTasksCompleted;
 
     [ObservableProperty]
-    private int _sleepDoneDays;
+    private int _totalTasksScheduled;
 
     [RelayCommand]
     private async Task ApplyFilterAsync()
@@ -84,10 +83,10 @@ public partial class TakipGecmisiViewModel : ObservableObject
 
             HasNoRecords = Rows.Count == 0;
             TotalRecordDays = result.TotalRecordDays;
-            TechnicalDoneDays = result.TechnicalDoneDays;
-            SpeakingDoneDays = result.SpeakingDoneDays;
-            GrammarDoneDays = result.GrammarDoneDays;
-            SleepDoneDays = result.SleepDoneDays;
+            AverageDailyCompletionPercent = result.AverageDailyCompletionPercent;
+            FullyCompletedDays = result.FullyCompletedDays;
+            TotalTasksCompleted = result.TotalTasksCompleted;
+            TotalTasksScheduled = result.TotalTasksScheduled;
 
             SelectedRow = null;
             StatusMessage = HasNoRecords ? "Kayıt bulunamadı." : null;

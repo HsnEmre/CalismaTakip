@@ -49,10 +49,10 @@
                     CornerRadius="10"
                     Padding="12,10">
                 <StackPanel>
-                    <TextBlock Text="Teknik yapılan"
+                    <TextBlock Text="Ortalama günlük %"
                                FontSize="11"
                                Foreground="{StaticResource Brush.TextMuted}" />
-                    <TextBlock Text="{Binding TechnicalDoneDays}"
+                    <TextBlock Text="{Binding AverageDailyCompletionPercent, StringFormat={}{0:0.#}%}"
                                FontSize="22"
                                FontWeight="SemiBold"
                                Margin="0,4,0,0" />
@@ -65,10 +65,10 @@
                     CornerRadius="10"
                     Padding="12,10">
                 <StackPanel>
-                    <TextBlock Text="Speaking yapılan"
+                    <TextBlock Text="%100 tamamlanan gün"
                                FontSize="11"
                                Foreground="{StaticResource Brush.TextMuted}" />
-                    <TextBlock Text="{Binding SpeakingDoneDays}"
+                    <TextBlock Text="{Binding FullyCompletedDays}"
                                FontSize="22"
                                FontWeight="SemiBold"
                                Margin="0,4,0,0" />
@@ -81,10 +81,10 @@
                     CornerRadius="10"
                     Padding="12,10">
                 <StackPanel>
-                    <TextBlock Text="Grammar yapılan"
+                    <TextBlock Text="Tamamlanan görev"
                                FontSize="11"
                                Foreground="{StaticResource Brush.TextMuted}" />
-                    <TextBlock Text="{Binding GrammarDoneDays}"
+                    <TextBlock Text="{Binding TotalTasksCompleted}"
                                FontSize="22"
                                FontWeight="SemiBold"
                                Margin="0,4,0,0" />
@@ -96,10 +96,10 @@
                     CornerRadius="10"
                     Padding="12,10">
                 <StackPanel>
-                    <TextBlock Text="Uyku düzeni sağlanan"
+                    <TextBlock Text="Planlanan görev"
                                FontSize="11"
                                Foreground="{StaticResource Brush.TextMuted}" />
-                    <TextBlock Text="{Binding SleepDoneDays}"
+                    <TextBlock Text="{Binding TotalTasksScheduled}"
                                FontSize="22"
                                FontWeight="SemiBold"
                                Margin="0,4,0,0" />
@@ -185,18 +185,12 @@
                                         Binding="{Binding DateDisplay}"
                                         Width="110"
                                         IsReadOnly="True" />
-                    <DataGridTextColumn Header="Teknik çalışma"
-                                        Binding="{Binding TechnicalDisplay}"
+                    <DataGridTextColumn Header="Görev (yapılan/toplam)"
+                                        Binding="{Binding TaskRatioText}"
                                         Width="*" />
-                    <DataGridTextColumn Header="Speaking"
-                                        Binding="{Binding SpeakingDisplay}"
-                                        Width="*" />
-                    <DataGridTextColumn Header="Grammar"
-                                        Binding="{Binding GrammarDisplay}"
-                                        Width="*" />
-                    <DataGridTextColumn Header="Uyku düzeni"
-                                        Binding="{Binding SleepDisplay}"
-                                        Width="*" />
+                    <DataGridTextColumn Header="Tamamlanma"
+                                        Binding="{Binding PercentText}"
+                                        Width="100" />
                     <DataGridTextColumn Header="Not"
                                         Binding="{Binding Note}"
                                         Width="2*">
@@ -251,29 +245,15 @@
                             <DockPanel Margin="0,0,0,6">
                                 <TextBlock DockPanel.Dock="Left"
                                            FontWeight="SemiBold"
-                                           Text="Teknik çalışma: " />
-                                <TextBlock Text="{Binding SelectedRow.TechnicalDisplay}"
-                                           TextWrapping="Wrap" />
-                            </DockPanel>
-                            <DockPanel Margin="0,0,0,6">
-                                <TextBlock DockPanel.Dock="Left"
-                                           FontWeight="SemiBold"
-                                           Text="Speaking: " />
-                                <TextBlock Text="{Binding SelectedRow.SpeakingDisplay}"
-                                           TextWrapping="Wrap" />
-                            </DockPanel>
-                            <DockPanel Margin="0,0,0,6">
-                                <TextBlock DockPanel.Dock="Left"
-                                           FontWeight="SemiBold"
-                                           Text="Grammar: " />
-                                <TextBlock Text="{Binding SelectedRow.GrammarDisplay}"
+                                           Text="Görev özeti: " />
+                                <TextBlock Text="{Binding SelectedRow.TaskRatioText}"
                                            TextWrapping="Wrap" />
                             </DockPanel>
                             <DockPanel Margin="0,0,0,12">
                                 <TextBlock DockPanel.Dock="Left"
                                            FontWeight="SemiBold"
-                                           Text="Uyku düzeni: " />
-                                <TextBlock Text="{Binding SelectedRow.SleepDisplay}"
+                                           Text="Tamamlanma: " />
+                                <TextBlock Text="{Binding SelectedRow.PercentText}"
                                            TextWrapping="Wrap" />
                             </DockPanel>
 

@@ -65,7 +65,7 @@ public partial class CalendarDayCellViewModel : ObservableObject
         }
         else
         {
-            CompletionShortText = $"{Summary.CompletedCount}/4";
+            CompletionShortText = $"{Summary.CompletedTaskCount}/{Summary.TotalTaskCount}";
             PercentShortText = $"{Summary.CompletionPercent:0}%";
         }
     }

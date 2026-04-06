@@ -1,6 +1,4 @@
 using CalismaTakip.Data;
-using CalismaTakip.Helpers;
-using CalismaTakip.Models;
 using CalismaTakip.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,16 +23,15 @@ public class CalendarStatisticsService : ICalendarStatisticsService
 
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
-        var records = await db.DailyCheckRecords
+        var headers = await db.DailyPlanTrackHeaders
             .AsNoTracking()
-            .Include(r => r.Completions)
-            .ThenInclude(c => c.DailyCheckDefinition)
-            .Where(r => r.Date >= inclusiveStart && r.Date <= inclusiveEnd)
+            .Include(h => h.Items)
+            .Where(h => h.TrackDate >= inclusiveStart && h.TrackDate <= inclusiveEnd)
             .ToListAsync(cancellationToken);
 
         var dict = new Dictionary<DateOnly, DailyCompletionSummary>();
-        foreach (var r in records)
-            dict[r.Date] = DailyCompletionHelper.ToSummary(r, r.Date);
+        foreach (var h in headers)
+            dict[h.TrackDate] = DailyCompletionSummary.FromHeader(h);
 
         return dict;
     }
@@ -43,15 +40,14 @@ public class CalendarStatisticsService : ICalendarStatisticsService
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
-        var record = await db.DailyCheckRecords
+        var header = await db.DailyPlanTrackHeaders
             .AsNoTracking()
-            .Include(r => r.Completions)
-            .ThenInclude(c => c.DailyCheckDefinition)
-            .FirstOrDefaultAsync(r => r.Date == date, cancellationToken);
+            .Include(h => h.Items)
+            .FirstOrDefaultAsync(h => h.TrackDate == date, cancellationToken);
 
-        return record == null
+        return header == null
             ? DailyCompletionSummary.Empty(date)
-            : DailyCompletionHelper.ToSummary(record, date);
+            : DailyCompletionSummary.FromHeader(header);
     }
 
     public async Task<MonthlyStatisticsDto> GetMonthlyStatisticsAsync(
@@ -64,14 +60,13 @@ public class CalendarStatisticsService : ICalendarStatisticsService
 
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
-        var records = await db.DailyCheckRecords
+        var headers = await db.DailyPlanTrackHeaders
             .AsNoTracking()
-            .Include(r => r.Completions)
-            .ThenInclude(c => c.DailyCheckDefinition)
-            .Where(r => r.Date >= start && r.Date <= end)
+            .Include(h => h.Items)
+            .Where(h => h.TrackDate >= start && h.TrackDate <= end)
             .ToListAsync(cancellationToken);
 
-        var totalRecorded = records.Count;
+        var totalRecorded = headers.Count;
         if (totalRecorded == 0)
         {
             return new MonthlyStatisticsDto
@@ -79,44 +74,50 @@ public class CalendarStatisticsService : ICalendarStatisticsService
                 Year = year,
                 Month = month,
                 TotalRecordedDays = 0,
-                TechnicalDoneDays = 0,
-                SpeakingDoneDays = 0,
-                GrammarDoneDays = 0,
-                SleepDoneDays = 0,
+                TotalTasksCompletedInMonth = 0,
+                TotalTasksScheduledInMonth = 0,
                 AverageDailyCompletionPercent = 0,
                 FullCompletionDays = 0,
                 ZeroCompletionDays = 0,
+                PartialCompletionDays = 0,
                 BestDayCompletionPercent = 0,
                 TotalPerformancePercent = 0
             };
         }
 
-        var summaries = records.Select(r => DailyCompletionHelper.ToSummary(r, r.Date)).ToList();
+        var summaries = headers.Select(DailyCompletionSummary.FromHeader).ToList();
+        var sumDone = headers.Sum(h => h.Items.Count(i => i.IsCompleted));
+        var sumTotal = headers.Sum(h => h.Items.Count);
 
-        var technical = summaries.Count(s => s.TechnicalDone);
-        var speaking = summaries.Count(s => s.SpeakingDone);
-        var grammar = summaries.Count(s => s.GrammarDone);
-        var sleep = summaries.Count(s => s.SleepDone);
-        var full = summaries.Count(s => s.CompletedCount == 4);
-        var zero = summaries.Count(s => s.CompletedCount == 0);
-        var avgDaily = summaries.Average(s => s.CompletionPercent);
-        var best = summaries.Max(s => s.CompletionPercent);
-        var totalSlots = totalRecorded * 4;
-        var totalDone = summaries.Sum(s => s.CompletedCount);
-        var totalPerf = totalSlots > 0 ? totalDone * 100.0 / totalSlots : 0;
+        var full = headers.Count(h => h.Items.Count > 0 && h.Items.All(i => i.IsCompleted));
+        var zero = headers.Count(h => h.Items.Count > 0 && h.Items.All(i => !i.IsCompleted));
+        var partial = headers.Count(h =>
+        {
+            var n = h.Items.Count;
+            if (n == 0)
+                return false;
+            var d = h.Items.Count(i => i.IsCompleted);
+            return d > 0 && d < n;
+        });
+
+        var withTasks = summaries.Where(s => s.TotalTaskCount > 0).ToList();
+        var avgDaily = withTasks.Count > 0
+            ? withTasks.Average(s => s.CompletionPercent)
+            : 0;
+        var best = withTasks.Count > 0 ? withTasks.Max(s => s.CompletionPercent) : 0;
+        var totalPerf = sumTotal > 0 ? sumDone * 100.0 / sumTotal : 0;
 
         return new MonthlyStatisticsDto
         {
             Year = year,
             Month = month,
             TotalRecordedDays = totalRecorded,
-            TechnicalDoneDays = technical,
-            SpeakingDoneDays = speaking,
-            GrammarDoneDays = grammar,
-            SleepDoneDays = sleep,
+            TotalTasksCompletedInMonth = sumDone,
+            TotalTasksScheduledInMonth = sumTotal,
             AverageDailyCompletionPercent = Math.Round(avgDaily, 1),
             FullCompletionDays = full,
             ZeroCompletionDays = zero,
+            PartialCompletionDays = partial,
             BestDayCompletionPercent = Math.Round(best, 1),
             TotalPerformancePercent = Math.Round(totalPerf, 1)
         };
@@ -153,11 +154,9 @@ public class CalendarStatisticsService : ICalendarStatisticsService
         return list;
     }
 
-    /// <summary>Pazartesi=0 … Pazar=6 olacak şekilde ayın ilk gününe kadar geri sayım.</summary>
     private static int GetMondayBasedOffset(DateOnly firstOfMonth)
     {
-        var dow = firstOfMonth.DayOfWeek;
-        return dow switch
+        return firstOfMonth.DayOfWeek switch
         {
             DayOfWeek.Monday => 0,
             DayOfWeek.Tuesday => 1,

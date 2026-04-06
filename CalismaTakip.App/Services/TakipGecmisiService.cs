@@ -1,6 +1,7 @@
 using System.Globalization;
 using CalismaTakip.Data;
 using CalismaTakip.Models;
+using CalismaTakip.Models.Dtos;
 using CalismaTakip.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +9,6 @@ namespace CalismaTakip.Services;
 
 public class TakipGecmisiService : ITakipGecmisiService
 {
-    private const string KeyTechnical = "technical";
-    private const string KeySpeaking = "speaking";
-    private const string KeyGrammar = "grammar";
-    private const string KeySleep = "sleep";
-
     private readonly IDbContextFactory<AppDbContext> _factory;
 
     public TakipGecmisiService(IDbContextFactory<AppDbContext> factory)
@@ -30,58 +26,55 @@ public class TakipGecmisiService : ITakipGecmisiService
 
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
-        var records = await db.DailyCheckRecords
+        var headers = await db.DailyPlanTrackHeaders
             .AsNoTracking()
-            .Include(r => r.Completions)
-            .ThenInclude(c => c.DailyCheckDefinition)
-            .Where(r => r.Date >= start && r.Date <= end)
-            .OrderByDescending(r => r.Date)
+            .Include(h => h.Items)
+            .Where(h => h.TrackDate >= start && h.TrackDate <= end)
+            .OrderByDescending(h => h.TrackDate)
             .ToListAsync(cancellationToken);
 
-        var rows = records.Select(MapRow).ToList();
+        var culture = CultureInfo.GetCultureInfo("tr-TR");
+        var rows = headers.Select(h => MapRow(h, culture)).ToList();
+
+        var withTasks = headers.Where(h => h.Items.Count > 0).ToList();
+        var avg = withTasks.Count == 0
+            ? 0
+            : withTasks.Average(h =>
+            {
+                var s = DailyCompletionSummary.FromHeader(h);
+                return s.CompletionPercent;
+            });
+
+        var full = headers.Count(h => h.Items.Count > 0 && h.Items.All(i => i.IsCompleted));
+        var sumDone = headers.Sum(h => h.Items.Count(i => i.IsCompleted));
+        var sumTotal = headers.Sum(h => h.Items.Count);
 
         return new TakipGecmisiQueryResult
         {
             Rows = rows,
-            TotalRecordDays = records.Count,
-            TechnicalDoneDays = records.Count(r => IsCompleted(r, KeyTechnical)),
-            SpeakingDoneDays = records.Count(r => IsCompleted(r, KeySpeaking)),
-            GrammarDoneDays = records.Count(r => IsCompleted(r, KeyGrammar)),
-            SleepDoneDays = records.Count(r => IsCompleted(r, KeySleep))
+            TotalRecordDays = headers.Count,
+            AverageDailyCompletionPercent = Math.Round(avg, 1),
+            FullyCompletedDays = full,
+            TotalTasksCompleted = sumDone,
+            TotalTasksScheduled = sumTotal
         };
     }
 
-    private static bool IsCompleted(DailyCheckRecord record, string key)
+    private static TakipGecmisiRowViewModel MapRow(DailyPlanTrackHeader header, CultureInfo culture)
     {
-        if (record.Completions == null || record.Completions.Count == 0)
-            return false;
-
-        foreach (var c in record.Completions)
-        {
-            var defKey = c.DailyCheckDefinition?.Key;
-            if (string.Equals(defKey, key, StringComparison.OrdinalIgnoreCase))
-                return c.IsCompleted;
-        }
-
-        return false;
-    }
-
-    private static TakipGecmisiRowViewModel MapRow(DailyCheckRecord record)
-    {
-        var date = record.Date;
-        var dateDisplay = date.ToString("dd.MM.yyyy", CultureInfo.GetCultureInfo("tr-TR"));
-        var note = record.Note ?? string.Empty;
+        var s = DailyCompletionSummary.FromHeader(header);
+        var dateDisplay = header.TrackDate.ToString("dd.MM.yyyy", culture);
+        var ratio = s.TotalTaskCount == 0
+            ? "—"
+            : $"{s.CompletedTaskCount}/{s.TotalTaskCount}";
+        var pct = s.TotalTaskCount == 0 ? "—" : $"{s.CompletionPercent:0.#}%";
 
         return new TakipGecmisiRowViewModel(
-            record.Id,
-            date,
+            header.Id,
+            header.TrackDate,
             dateDisplay,
-            ToDisplay(IsCompleted(record, KeyTechnical)),
-            ToDisplay(IsCompleted(record, KeySpeaking)),
-            ToDisplay(IsCompleted(record, KeyGrammar)),
-            ToDisplay(IsCompleted(record, KeySleep)),
-            note);
+            ratio,
+            pct,
+            header.Note ?? string.Empty);
     }
-
-    private static string ToDisplay(bool done) => done ? "Yapıldı" : "Yapılmadı";
 }

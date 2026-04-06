@@ -37,17 +37,9 @@ public partial class StatisticsViewModel : ObservableObject
     [ObservableProperty]
     private string? _statusMessage;
 
+    /// <summary>Ay içinde tamamlanan / planlanan tüm görev slotları oranı (%).</summary>
     [ObservableProperty]
-    private double _technicalSharePercent;
-
-    [ObservableProperty]
-    private double _speakingSharePercent;
-
-    [ObservableProperty]
-    private double _grammarSharePercent;
-
-    [ObservableProperty]
-    private double _sleepSharePercent;
+    private double _taskSlotCompletionPercent;
 
     [ObservableProperty]
     private double _averageCompletionBar;
@@ -102,21 +94,9 @@ public partial class StatisticsViewModel : ObservableObject
 
     private void ApplyBarValues(MonthlyStatisticsDto d)
     {
-        if (d.TotalRecordedDays <= 0)
-        {
-            TechnicalSharePercent = 0;
-            SpeakingSharePercent = 0;
-            GrammarSharePercent = 0;
-            SleepSharePercent = 0;
-        }
-        else
-        {
-            var n = (double)d.TotalRecordedDays;
-            TechnicalSharePercent = Math.Round(d.TechnicalDoneDays * 100.0 / n, 1);
-            SpeakingSharePercent = Math.Round(d.SpeakingDoneDays * 100.0 / n, 1);
-            GrammarSharePercent = Math.Round(d.GrammarDoneDays * 100.0 / n, 1);
-            SleepSharePercent = Math.Round(d.SleepDoneDays * 100.0 / n, 1);
-        }
+        TaskSlotCompletionPercent = d.TotalTasksScheduledInMonth <= 0
+            ? 0
+            : Math.Round(d.TotalTasksCompletedInMonth * 100.0 / d.TotalTasksScheduledInMonth, 1);
 
         AverageCompletionBar = d.AverageDailyCompletionPercent;
         TotalPerformanceBar = d.TotalPerformancePercent;

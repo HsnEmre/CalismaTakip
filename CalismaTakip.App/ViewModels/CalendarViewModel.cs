@@ -52,16 +52,10 @@ public partial class CalendarViewModel : ObservableObject
     private string _selectedDateDisplay = string.Empty;
 
     [ObservableProperty]
-    private string _detailTechnicalText = string.Empty;
+    private string _detailPlanTypeText = string.Empty;
 
     [ObservableProperty]
-    private string _detailSpeakingText = string.Empty;
-
-    [ObservableProperty]
-    private string _detailGrammarText = string.Empty;
-
-    [ObservableProperty]
-    private string _detailSleepText = string.Empty;
+    private string _detailTaskRatioText = string.Empty;
 
     [ObservableProperty]
     private string _detailPercentText = string.Empty;
@@ -105,12 +99,27 @@ public partial class CalendarViewModel : ObservableObject
         HasDetailRecord = summary.HasRecord;
         ShowNoRecordMessage = !summary.HasRecord;
         SelectedDateDisplay = cell.Date.ToString("dd MMMM yyyy", Turkish);
-        DetailTechnicalText = DailyCompletionHelper.ToDoneLabel(summary.TechnicalDone);
-        DetailSpeakingText = DailyCompletionHelper.ToDoneLabel(summary.SpeakingDone);
-        DetailGrammarText = DailyCompletionHelper.ToDoneLabel(summary.GrammarDone);
-        DetailSleepText = DailyCompletionHelper.ToDoneLabel(summary.SleepDone);
-        DetailPercentText = $"{summary.CompletionPercent:0}%";
-        DetailNoteText = summary.Note ?? string.Empty;
+
+        if (summary.HasRecord)
+        {
+            DetailPlanTypeText = string.IsNullOrWhiteSpace(summary.PlanTypeLabel)
+                ? "Plan kaydı"
+                : summary.PlanTypeLabel;
+            DetailTaskRatioText = summary.TotalTaskCount == 0
+                ? "—"
+                : $"{summary.CompletedTaskCount} / {summary.TotalTaskCount} görev";
+            DetailPercentText = summary.TotalTaskCount == 0
+                ? "—"
+                : $"{summary.CompletionPercent:0.#}%";
+            DetailNoteText = summary.Note ?? string.Empty;
+        }
+        else
+        {
+            DetailPlanTypeText = string.Empty;
+            DetailTaskRatioText = string.Empty;
+            DetailPercentText = string.Empty;
+            DetailNoteText = string.Empty;
+        }
 
         foreach (var c in Cells)
             c.RefreshSelectionState(SelectedDate);
@@ -151,10 +160,8 @@ public partial class CalendarViewModel : ObservableObject
         HasDetailRecord = false;
         ShowNoRecordMessage = false;
         SelectedDateDisplay = string.Empty;
-        DetailTechnicalText = string.Empty;
-        DetailSpeakingText = string.Empty;
-        DetailGrammarText = string.Empty;
-        DetailSleepText = string.Empty;
+        DetailPlanTypeText = string.Empty;
+        DetailTaskRatioText = string.Empty;
         DetailPercentText = string.Empty;
         DetailNoteText = string.Empty;
         foreach (var c in Cells)
@@ -169,4 +176,3 @@ public partial class CalendarViewModel : ObservableObject
         MonthTitle = $"{name} {DisplayYear}";
     }
 }
-

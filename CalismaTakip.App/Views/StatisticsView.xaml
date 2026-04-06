@@ -7,7 +7,7 @@
                 <TextBlock Text="Aylık istatistikler"
                            FontSize="22"
                            FontWeight="SemiBold" />
-                <TextBlock Text="Seçili ay için kayıtlı günlerinizin özeti ve hedef dağılımı."
+                <TextBlock Text="Plan satırlarına göre tamamlanma; seçili ay için özet."
                            Foreground="{StaticResource Brush.TextMuted}"
                            Margin="0,6,0,0"
                            TextWrapping="Wrap" />
@@ -67,7 +67,6 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <!-- Özet kartları -->
             <UniformGrid Columns="5" Margin="0,0,0,10">
                 <Border Margin="0,0,8,10"
                         Background="#F0F4FF"
@@ -92,10 +91,10 @@
                         CornerRadius="10"
                         Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="Teknik (gün)"
+                        <TextBlock Text="Tamamlanan görev"
                                    FontSize="11"
                                    Foreground="{StaticResource Brush.TextMuted}" />
-                        <TextBlock Text="{Binding Stats.TechnicalDoneDays}"
+                        <TextBlock Text="{Binding Stats.TotalTasksCompletedInMonth}"
                                    FontSize="22"
                                    FontWeight="SemiBold"
                                    Margin="0,4,0,0" />
@@ -108,10 +107,10 @@
                         CornerRadius="10"
                         Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="Speaking (gün)"
+                        <TextBlock Text="Planlanan görev"
                                    FontSize="11"
                                    Foreground="{StaticResource Brush.TextMuted}" />
-                        <TextBlock Text="{Binding Stats.SpeakingDoneDays}"
+                        <TextBlock Text="{Binding Stats.TotalTasksScheduledInMonth}"
                                    FontSize="22"
                                    FontWeight="SemiBold"
                                    Margin="0,4,0,0" />
@@ -119,41 +118,6 @@
                 </Border>
                 <Border Margin="0,0,8,10"
                         Background="#FEF3C7"
-                        BorderBrush="{StaticResource Brush.Border}"
-                        BorderThickness="1"
-                        CornerRadius="10"
-                        Padding="12,10">
-                    <StackPanel>
-                        <TextBlock Text="Grammar (gün)"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Brush.TextMuted}" />
-                        <TextBlock Text="{Binding Stats.GrammarDoneDays}"
-                                   FontSize="22"
-                                   FontWeight="SemiBold"
-                                   Margin="0,4,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Margin="0,0,0,10"
-                        Background="#EEF2FF"
-                        BorderBrush="{StaticResource Brush.Border}"
-                        BorderThickness="1"
-                        CornerRadius="10"
-                        Padding="12,10">
-                    <StackPanel>
-                        <TextBlock Text="Uyku (gün)"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Brush.TextMuted}" />
-                        <TextBlock Text="{Binding Stats.SleepDoneDays}"
-                                   FontSize="22"
-                                   FontWeight="SemiBold"
-                                   Margin="0,4,0,0" />
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
-
-            <UniformGrid Columns="5" Margin="0,0,0,20">
-                <Border Margin="0,0,8,0"
-                        Background="#F9FAFB"
                         BorderBrush="{StaticResource Brush.Border}"
                         BorderThickness="1"
                         CornerRadius="10"
@@ -168,6 +132,25 @@
                                    Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
+                <Border Margin="0,0,0,10"
+                        Background="#EEF2FF"
+                        BorderBrush="{StaticResource Brush.Border}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="12,10">
+                    <StackPanel>
+                        <TextBlock Text="Ay performansı %"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="{Binding Stats.TotalPerformancePercent, StringFormat={}{0:0.#}%}"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <UniformGrid Columns="5" Margin="0,0,0,20">
                 <Border Margin="0,0,8,0"
                         Background="#ECFDF5"
                         BorderBrush="{StaticResource Brush.Border}"
@@ -175,7 +158,7 @@
                         CornerRadius="10"
                         Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="4/4 gün"
+                        <TextBlock Text="%100 gün"
                                    FontSize="11"
                                    Foreground="{StaticResource Brush.TextMuted}" />
                         <TextBlock Text="{Binding Stats.FullCompletionDays}"
@@ -191,10 +174,26 @@
                         CornerRadius="10"
                         Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="0/4 gün"
+                        <TextBlock Text="%0 gün"
                                    FontSize="11"
                                    Foreground="{StaticResource Brush.TextMuted}" />
                         <TextBlock Text="{Binding Stats.ZeroCompletionDays}"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Margin="0,0,8,0"
+                        Background="#F9FAFB"
+                        BorderBrush="{StaticResource Brush.Border}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="12,10">
+                    <StackPanel>
+                        <TextBlock Text="Kısmi gün"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="{Binding Stats.PartialCompletionDays}"
                                    FontSize="20"
                                    FontWeight="SemiBold"
                                    Margin="0,4,0,0" />
@@ -222,10 +221,10 @@
                         CornerRadius="10"
                         Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="Toplam performans %"
+                        <TextBlock Text="Slot tamamlama %"
                                    FontSize="11"
                                    Foreground="{StaticResource Brush.TextMuted}" />
-                        <TextBlock Text="{Binding Stats.TotalPerformancePercent, StringFormat={}{0:0.#}%}"
+                        <TextBlock Text="{Binding TaskSlotCompletionPercent, StringFormat={}{0:0.#}%}"
                                    FontSize="20"
                                    FontWeight="SemiBold"
                                    Margin="0,4,0,0" />
@@ -233,57 +232,32 @@
                 </Border>
             </UniformGrid>
 
-            <TextBlock Text="Hedef dağılımı (kayıtlı günlere göre)"
+            <TextBlock Text="Görev slot tamamlama (ay geneli)"
                        FontWeight="SemiBold"
                        FontSize="15"
                        Margin="0,0,0,10" />
 
-            <StackPanel Margin="0,0,0,8">
-                <DockPanel Margin="0,0,0,6">
-                    <TextBlock DockPanel.Dock="Left" Width="140" Text="Teknik çalışma" VerticalAlignment="Center" />
-                    <ProgressBar Height="14"
-                                 Maximum="100"
-                                 Value="{Binding TechnicalSharePercent}"
-                                 Foreground="#22C55E" />
-                </DockPanel>
-                <DockPanel Margin="0,0,0,6">
-                    <TextBlock DockPanel.Dock="Left" Width="140" Text="Speaking" VerticalAlignment="Center" />
-                    <ProgressBar Height="14"
-                                 Maximum="100"
-                                 Value="{Binding SpeakingSharePercent}"
-                                 Foreground="#EAB308" />
-                </DockPanel>
-                <DockPanel Margin="0,0,0,6">
-                    <TextBlock DockPanel.Dock="Left" Width="140" Text="Grammar" VerticalAlignment="Center" />
-                    <ProgressBar Height="14"
-                                 Maximum="100"
-                                 Value="{Binding GrammarSharePercent}"
-                                 Foreground="#F97316" />
-                </DockPanel>
-                <DockPanel Margin="0,0,0,6">
-                    <TextBlock DockPanel.Dock="Left" Width="140" Text="Uyku düzeni" VerticalAlignment="Center" />
-                    <ProgressBar Height="14"
-                                 Maximum="100"
-                                 Value="{Binding SleepSharePercent}"
-                                 Foreground="#6366F1" />
-                </DockPanel>
-            </StackPanel>
+            <ProgressBar Height="18"
+                         Maximum="100"
+                         Value="{Binding TaskSlotCompletionPercent}"
+                         Foreground="#2563EB"
+                         Margin="0,0,0,20" />
 
             <TextBlock Text="Özet çubukları"
                        FontWeight="SemiBold"
                        FontSize="15"
-                       Margin="0,12,0,10" />
+                       Margin="0,0,0,10" />
 
             <DockPanel Margin="0,0,0,6">
-                <TextBlock DockPanel.Dock="Left" Width="200" Text="Ortalama günlük tamamlama" TextWrapping="Wrap" />
-                <ProgressBar Height="16" Maximum="100" Value="{Binding AverageCompletionBar}" Foreground="#2563EB" />
+                <TextBlock DockPanel.Dock="Left" Width="220" Text="Ortalama günlük tamamlama" TextWrapping="Wrap" />
+                <ProgressBar Height="16" Maximum="100" Value="{Binding AverageCompletionBar}" Foreground="#0D9488" />
             </DockPanel>
             <DockPanel Margin="0,0,0,6">
-                <TextBlock DockPanel.Dock="Left" Width="200" Text="Ay toplam performansı" TextWrapping="Wrap" />
-                <ProgressBar Height="16" Maximum="100" Value="{Binding TotalPerformanceBar}" Foreground="#0D9488" />
+                <TextBlock DockPanel.Dock="Left" Width="220" Text="Ay toplam performansı" TextWrapping="Wrap" />
+                <ProgressBar Height="16" Maximum="100" Value="{Binding TotalPerformanceBar}" Foreground="#059669" />
             </DockPanel>
             <DockPanel Margin="0,0,0,0">
-                <TextBlock DockPanel.Dock="Left" Width="200" Text="En başarılı gün (oran)" TextWrapping="Wrap" />
+                <TextBlock DockPanel.Dock="Left" Width="220" Text="En başarılı gün (oran)" TextWrapping="Wrap" />
                 <ProgressBar Height="16" Maximum="100" Value="{Binding BestDayBar}" Foreground="#7C3AED" />
             </DockPanel>
         </StackPanel>

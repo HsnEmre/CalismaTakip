@@ -16,30 +16,24 @@ public class DatabaseInitializer : IDatabaseInitializer
     {
         using var db = _factory.CreateDbContext();
         db.Database.EnsureCreated();
+        PlanTrackSchemaInstaller.EnsureInstalled(db);
 
         if (!db.TimeSlots.Any())
         {
-            SeedAll(db);
+            SeedWeeklyPlan(db);
             db.SaveChanges();
         }
+
+        PlanTemplateSeed.SeedIfEmpty(db);
+        db.SaveChanges();
     }
 
-    private static void SeedAll(AppDbContext db)
+    private static void SeedWeeklyPlan(AppDbContext db)
     {
-        SeedDefinitions(db);
         var weekdaySlots = SeedWeekdaySlots(db);
         SeedWeekdayPlanItems(db, weekdaySlots);
         var weekendSlots = SeedWeekendSlots(db);
         SeedWeekendPlanItems(db, weekendSlots);
-    }
-
-    private static void SeedDefinitions(AppDbContext db)
-    {
-        db.DailyCheckDefinitions.AddRange(
-            new DailyCheckDefinition { Key = "technical", DisplayName = "Teknik çalışma", SortOrder = 1 },
-            new DailyCheckDefinition { Key = "speaking", DisplayName = "Speaking", SortOrder = 2 },
-            new DailyCheckDefinition { Key = "grammar", DisplayName = "Grammar", SortOrder = 3 },
-            new DailyCheckDefinition { Key = "sleep", DisplayName = "Uyku düzeni", SortOrder = 4 });
     }
 
     private static List<TimeSlot> SeedWeekdaySlots(AppDbContext db)

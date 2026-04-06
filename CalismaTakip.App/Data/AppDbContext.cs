@@ -14,11 +14,11 @@ public class AppDbContext : DbContext
 
     public DbSet<WeeklyPlanItem> WeeklyPlanItems => Set<WeeklyPlanItem>();
 
-    public DbSet<DailyCheckDefinition> DailyCheckDefinitions => Set<DailyCheckDefinition>();
+    public DbSet<PlanTemplateItem> PlanTemplateItems => Set<PlanTemplateItem>();
 
-    public DbSet<DailyCheckRecord> DailyCheckRecords => Set<DailyCheckRecord>();
+    public DbSet<DailyPlanTrackHeader> DailyPlanTrackHeaders => Set<DailyPlanTrackHeader>();
 
-    public DbSet<DailyCheckCompletion> DailyCheckCompletions => Set<DailyCheckCompletion>();
+    public DbSet<DailyPlanTrackItem> DailyPlanTrackItems => Set<DailyPlanTrackItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,33 +42,31 @@ public class AppDbContext : DbContext
             e.HasIndex(x => new { x.PlanKind, x.TimeSlotId, x.DayOfWeek }).IsUnique();
         });
 
-        modelBuilder.Entity<DailyCheckDefinition>(e =>
+        modelBuilder.Entity<PlanTemplateItem>(e =>
         {
             e.HasKey(x => x.Id);
-            e.Property(x => x.Key).HasMaxLength(64).IsRequired();
-            e.Property(x => x.DisplayName).HasMaxLength(256).IsRequired();
-            e.HasIndex(x => x.Key).IsUnique();
+            e.Property(x => x.TemplateKind).HasConversion<int>();
+            e.Property(x => x.Title).HasMaxLength(2000);
+            e.HasIndex(x => new { x.TemplateKind, x.SortOrder });
         });
 
-        modelBuilder.Entity<DailyCheckRecord>(e =>
+        modelBuilder.Entity<DailyPlanTrackHeader>(e =>
         {
             e.HasKey(x => x.Id);
+            e.Property(x => x.TemplateKind).HasConversion<int>();
             e.Property(x => x.Note).HasMaxLength(8000);
-            e.HasIndex(x => x.Date).IsUnique();
+            e.HasIndex(x => x.TrackDate).IsUnique();
+            e.HasMany(x => x.Items)
+                .WithOne(x => x.Header)
+                .HasForeignKey(x => x.HeaderId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<DailyCheckCompletion>(e =>
+        modelBuilder.Entity<DailyPlanTrackItem>(e =>
         {
             e.HasKey(x => x.Id);
-            e.HasOne(x => x.DailyCheckRecord)
-                .WithMany(x => x.Completions)
-                .HasForeignKey(x => x.DailyCheckRecordId)
-                .OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.DailyCheckDefinition)
-                .WithMany(x => x.Completions)
-                .HasForeignKey(x => x.DailyCheckDefinitionId)
-                .OnDelete(DeleteBehavior.Restrict);
-            e.HasIndex(x => new { x.DailyCheckRecordId, x.DailyCheckDefinitionId }).IsUnique();
+            e.Property(x => x.Title).HasMaxLength(2000);
+            e.HasIndex(x => new { x.HeaderId, x.SortOrder });
         });
     }
 }
