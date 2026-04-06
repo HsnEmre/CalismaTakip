@@ -21,10 +21,13 @@ public partial class App : Application
         services.AddSingleton<IWeeklyPlanService, WeeklyPlanService>();
         services.AddSingleton<IDailyTrackingService, DailyTrackingService>();
         services.AddSingleton<ITakipGecmisiService, TakipGecmisiService>();
+        services.AddSingleton<ICalendarStatisticsService, CalendarStatisticsService>();
         services.AddSingleton<WeekdayPlanViewModel>();
         services.AddSingleton<WeekendPlanViewModel>();
         services.AddSingleton<DailyTrackingViewModel>();
         services.AddSingleton<TakipGecmisiViewModel>();
+        services.AddSingleton<CalendarViewModel>();
+        services.AddSingleton<StatisticsViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindow>();
 

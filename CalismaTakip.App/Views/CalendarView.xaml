@@ -1,0 +1,270 @@
+<UserControl x:Class="CalismaTakip.Views.CalendarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" MinWidth="420" />
+            <ColumnDefinition Width="16" />
+            <ColumnDefinition Width="*" MinWidth="280" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                <TextBlock Text="Takvim"
+                           FontSize="22"
+                           FontWeight="SemiBold" />
+                <TextBlock Text="Aylık görünüm; hücre renkleri günlük tamamlanmaya göre değişir."
+                           Foreground="{StaticResource Brush.TextMuted}"
+                           Margin="0,6,0,0"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    Background="#FAFBFC"
+                    BorderBrush="{StaticResource Brush.Border}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="10,8"
+                    Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="◀"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding PreviousMonthCommand}"
+                            Padding="14,8"
+                            MinWidth="48"
+                            ToolTip="Önceki ay" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding MonthTitle}"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="2"
+                            Content="▶"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NextMonthCommand}"
+                            Padding="14,8"
+                            MinWidth="48"
+                            ToolTip="Sonraki ay" />
+                </Grid>
+            </Border>
+
+            <TextBlock Grid.Row="2"
+                       Text="{Binding StatusMessage}"
+                       Foreground="#B45309"
+                       Margin="0,0,0,8"
+                       TextWrapping="Wrap">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding StatusMessage}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding StatusMessage}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <Border Grid.Row="3"
+                    Background="{StaticResource Brush.Surface}"
+                    BorderBrush="{StaticResource Brush.Border}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <UniformGrid Grid.Row="0" Columns="7" Margin="0,0,0,6">
+                        <TextBlock Text="Pzt" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="Sal" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="Çar" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="Per" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="Cum" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="Cmt" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource Brush.TextMuted}" />
+                        <TextBlock Text="Paz" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{StaticResource Brush.TextMuted}" />
+                    </UniformGrid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Cells}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="7" Rows="6" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Margin="3"
+                                            Padding="0"
+                                            Height="72"
+                                            Command="{Binding DataContext.SelectDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Background="{Binding CellBackground}"
+                                            BorderBrush="{Binding SelectionBorder}"
+                                            BorderThickness="2"
+                                            Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="10"
+                                                        Padding="6,4">
+                                                    <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Opacity" Value="0.92" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="Bd" Property="Opacity" Value="0.85" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0"
+                                                       Text="{Binding Date.Day}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="15"
+                                                       HorizontalAlignment="Left"
+                                                       Opacity="{Binding LabelOpacity}" />
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding CompletionShortText}"
+                                                           FontSize="12"
+                                                           VerticalAlignment="Bottom"
+                                                           Opacity="{Binding LabelOpacity}" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding PercentShortText}"
+                                                           FontSize="11"
+                                                           VerticalAlignment="Bottom"
+                                                           Foreground="{StaticResource Brush.TextMuted}"
+                                                           Margin="4,0,0,0"
+                                                           Opacity="{Binding LabelOpacity}" />
+                                            </Grid>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Detay -->
+        <Border Grid.Column="2"
+                Background="#FAFBFC"
+                BorderBrush="{StaticResource Brush.Border}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="16,14">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Gün detayı"
+                           FontWeight="SemiBold"
+                           FontSize="16"
+                           Margin="0,0,0,12" />
+
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Bir güne tıklayın."
+                           Foreground="{StaticResource Brush.TextMuted}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasSelection}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Bu güne ait kayıt yok."
+                           Foreground="#B45309"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8"
+                           Visibility="{Binding ShowNoRecordMessage, Converter={StaticResource BoolToVis}}" />
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Visibility="{Binding HasDetailRecord, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{Binding SelectedDateDisplay}"
+                                   FontWeight="SemiBold"
+                                   FontSize="17"
+                                   Margin="0,0,0,12" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="Teknik çalışma: " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailTechnicalText}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="Speaking: " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailSpeakingText}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="Grammar: " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailGrammarText}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="Uyku düzeni: " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailSleepText}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="Tamamlanma: " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding DetailPercentText}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <TextBlock Text="Not"
+                                   FontWeight="SemiBold"
+                                   Margin="0,8,0,6" />
+                        <TextBox Text="{Binding DetailNoteText, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 MinHeight="100"
+                                 BorderBrush="{StaticResource Brush.Border}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>
